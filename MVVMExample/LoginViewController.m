@@ -9,13 +9,14 @@
 #import "LoginViewController.h"
 
 #import "ISWToolkit.h"
-#import "JKCountDownButton.h"
 #import "Masonry.h"
 
 #import "BizStyle.h"
 
 #import "KVOController.h"
 #import "LoginViewModel.h"
+
+#define kSystemCountDownTimer 60
 
 @interface LoginViewController ()
 {
@@ -24,7 +25,6 @@
 
     UIButton           *submitBtn;
     JKCountDownButton  *countDownBtn;
-    UIButton           *voiceCaptchaBtn;
 }
 
 @property (nonatomic,strong) LoginViewModel* viewModel;
@@ -37,6 +37,8 @@
     [super viewDidLoad];
     
     // Do any additional setup after loading the view, typically from a nib.
+    [self bindWithViewModel];
+
     [self buildUI];
 }
 
@@ -51,7 +53,7 @@
     FBKVOController *KVOController = [FBKVOController controllerWithObserver:self];
     self.KVOController = KVOController;
     [self.KVOController observe:self.viewModel
-                       keyPaths:@[@"ntReqPhase",@"myInfo",@"requestCaptchaSuc",@"validTel",@"validCaptcha"]
+                       keyPaths:@[@"ntReqPhase",@"requestCaptchaSuc",@"validTel",@"validCaptcha"]
                         options:NSKeyValueObservingOptionNew
                           block:
      ^(id observer, LoginViewModel *viewModel, NSDictionary *change) {
@@ -62,18 +64,15 @@
              [weakSelf popToast:[viewModel.ntReqPhase unsignedIntegerValue]
                           title:viewModel.ntReqPrompt];
              
-         } else if ([key isEqualToString:@"myInfo"]) {
-             [weakSelf myInfoValueUpdated];
-             
          } else if ([key isEqualToString:@"requestCaptchaSuc"]) {
-             [weakSelf updateSubmitBtn];
+             [weakSelf requestCaptchaSucValueUpdated];
              
          }  else if ([key isEqualToString:@"validTel"]) {
-             [weakSelf updateSubmitBtn];
+             [weakSelf validTelValueUpdated];
              
          } else if ([key isEqualToString:@"validCaptcha"]) {
-             [weakSelf updateSubmitBtn];
-             
+             [weakSelf validCaptchaValueUpdated];
+
          }
          
      }];
@@ -91,6 +90,8 @@
 {
     self.view.backgroundColor = kColorWhite;
     
+    self.title = @"请登录";
+
     ISW_WEAKSELF
     
     UILabel *loginTitle = [[UILabel alloc] init];
@@ -100,7 +101,12 @@
     [self.view addSubview:loginTitle];
     [loginTitle mas_makeConstraints:^(MASConstraintMaker *make) {
         make.leading.equalTo(weakSelf.view).offset(12);
-        make.top.equalTo(weakSelf.view).offset(20);
+        if (@available(iOS 11.0, *)) {
+            make.top.equalTo(self.view.mas_safeAreaLayoutGuideTop).offset(20);
+        } else {
+            make.top.equalTo(weakSelf.view).offset(20+44);
+        }
+    
     }];
     
     loginTitle.text = @"手机号一键登录";
@@ -111,8 +117,13 @@
     [separatorTel mas_makeConstraints:^(MASConstraintMaker *make) {
         make.leading.equalTo(weakSelf.view).offset(12);
         make.trailing.equalTo(weakSelf.view).offset(-12);
-        make.top.equalTo(weakSelf.view).offset(96);
         
+        if (@available(iOS 11.0, *)) {
+            make.top.equalTo(self.view.mas_safeAreaLayoutGuideTop).offset(96);
+        } else {
+            make.top.equalTo(weakSelf.view).offset(96+44);
+        }
+
         make.height.equalTo(@([UIScreen isw_pixel]));
     }];
     
@@ -132,7 +143,7 @@
     telInput.clearButtonMode = UITextFieldViewModeWhileEditing;
     telInput.borderStyle=UITextBorderStyleNone;
     telInput.keyboardType = UIKeyboardTypePhonePad;
-    //stony debug telInput.text = _viewModel.currentTel;
+    telInput.text = _viewModel.currentTel;
     telInput.placeholder = @"请输入手机号码";
     telInput.clearButtonMode = UITextFieldViewModeAlways;
     [telInput addTarget:self action:@selector(telInputDidChange:) forControlEvents:UIControlEventEditingChanged];
@@ -179,18 +190,6 @@
         make.width.equalTo(@([UIScreen isw_pixel]));
     }];
     
-    voiceCaptchaBtn = [JKCountDownButton buttonWithType:UIButtonTypeCustom];
-    [voiceCaptchaBtn isw_addClickAction:@selector(voiceBtnPressed:) target:self];
-    [voiceCaptchaBtn isw_titleForAllState:@"没收到?"];
-    [voiceCaptchaBtn isw_titleColorForAllState:kColorDeepDark];
-    voiceCaptchaBtn.titleLabel.font = [UIFont isw_Pingfang:14];
-    voiceCaptchaBtn.hidden = YES;
-    [self.view addSubview:voiceCaptchaBtn];
-    [voiceCaptchaBtn mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.centerY.equalTo(captchaInput);
-        make.right.equalTo(separatorVCaptcha.mas_left).offset(-12);
-    }];
-    
     countDownBtn = [JKCountDownButton buttonWithType:UIButtonTypeCustom];
     [countDownBtn isw_addClickAction:@selector(captchaBtnPressed:) target:self];
     [countDownBtn isw_titleForAllState:@"获取验证码"];
@@ -207,8 +206,7 @@
      ^NSString *(JKCountDownButton *countDownButton,NSUInteger second) {
          countDownButton.enabled = NO;
          NSString *title = [NSString stringWithFormat:@"%ld秒",(long)second];
-         //stony debug [weakSelf showVoiceBtn:kSystemCountDownTimer-second > 5];
-         
+
          return title;
      }];
     [countDownBtn countDownFinished:
@@ -238,47 +236,20 @@
     
 }
 
-#pragma mark == ui event
-
-- (void)voiceBtnPressed:(id)sender
+- (void)updateSubmitBtnUI
 {
-    //进行检验合法性
-    [self.view endEditing:YES];
-    
-    if(!_viewModel.validTel){
-        [ISWToast showFailToast:_viewModel.malFormatTelReason];
-        return;
+    if(_viewModel.requestCaptchaSuc==YES && _viewModel.validCaptcha && _viewModel.validTel){
+        submitBtn.enabled = YES;
+    } else {
+        submitBtn.enabled = NO;
     }
-    
-    //开始发验证码
-    ISW_WEAKSELF
-    
-    UIAlertController *alertController = [UIAlertController alertControllerWithTitle:@"提示"
-                                                                             message:@"是否接受电话语音验证码？"
-                                                                      preferredStyle:UIAlertControllerStyleAlert];
-    
-    UIAlertAction *cancelAction = [UIAlertAction actionWithTitle:@"取消"
-                                                           style:UIAlertActionStyleDefault
-                                                         handler:nil];
-    
-    UIAlertAction *okAction = [UIAlertAction actionWithTitle:@"接受"
-                                                       style:UIAlertActionStyleDefault
-                                                     handler:^(UIAlertAction *action)
-                               {
-                                   [weakSelf.viewModel requestVoiceCaptcha:telInput.text];
-                               }];
-    [alertController addAction:cancelAction];
-    [alertController addAction:okAction];
-    
-    [self presentViewController:alertController animated:YES completion:nil];
-    
 }
 
+
+#pragma mark == ui event
 - (void)captchaBtnPressed:(id)sender
 {
     [self.view endEditing:YES];
-    
-    voiceCaptchaBtn.hidden = YES;
     
     if(!_viewModel.validTel){
         [ISWToast showFailToast:_viewModel.malFormatTelReason];
@@ -294,23 +265,8 @@
 {
     [self.view endEditing:YES];
     
-    [_viewModel onLogin:telInput.text andCaptcha:captchaInput.text];
+    [_viewModel requestLoginWithCaptcha:telInput.text andCaptcha:captchaInput.text];
     
-}
-
-#pragma mark - model event
-- (void)myInfoValueUpdated
-{
-    
-}
-
-- (void)updateSubmitBtn
-{
-    if(_viewModel.requestCaptchaSuc==YES && _viewModel.validCaptcha && _viewModel.validTel){
-        submitBtn.enabled = YES;
-    } else {
-        submitBtn.enabled = NO;
-    }
 }
 
 -(void)captchaInputDidChange:(UITextField *)textField {
@@ -330,7 +286,24 @@
     
 }
 
+#pragma mark - model event
+- (void)requestCaptchaSucValueUpdated
+{
+    [self updateSubmitBtnUI];
+}
+
+- (void)validCaptchaValueUpdated
+{
+    [self updateSubmitBtnUI];
+}
+
+- (void)validTelValueUpdated
+{
+    [self updateSubmitBtnUI];
+}
+
 #pragma pop/dismiss UI
+
 - (void)popToast:(NtPhaseType)type title:(NSString*)title
 {
     switch (type) {

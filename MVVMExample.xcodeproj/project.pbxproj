@@ -17,7 +17,6 @@
 		8150F40A21E5D69A00222A63 /* BizStyle.m in Sources */ = {isa = PBXBuildFile; fileRef = 8150F40921E5D69A00222A63 /* BizStyle.m */; };
 		8150F40D21E5D81800222A63 /* LoginViewModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 8150F40C21E5D81800222A63 /* LoginViewModel.m */; };
 		8150F41021E5DCE000222A63 /* BizPtContext.m in Sources */ = {isa = PBXBuildFile; fileRef = 8150F40F21E5DCE000222A63 /* BizPtContext.m */; };
-		8150F41321E5DD2E00222A63 /* YCUserInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 8150F41221E5DD2E00222A63 /* YCUserInfo.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -37,8 +36,6 @@
 		8150F40C21E5D81800222A63 /* LoginViewModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = LoginViewModel.m; sourceTree = "<group>"; };
 		8150F40E21E5DCE000222A63 /* BizPtContext.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BizPtContext.h; sourceTree = "<group>"; };
 		8150F40F21E5DCE000222A63 /* BizPtContext.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = BizPtContext.m; sourceTree = "<group>"; };
-		8150F41121E5DD2E00222A63 /* YCUserInfo.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = YCUserInfo.h; sourceTree = "<group>"; };
-		8150F41221E5DD2E00222A63 /* YCUserInfo.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = YCUserInfo.m; sourceTree = "<group>"; };
 		845476475B832E72C0EA7C39 /* Pods-MVVMExample.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MVVMExample.debug.xcconfig"; path = "Target Support Files/Pods-MVVMExample/Pods-MVVMExample.debug.xcconfig"; sourceTree = "<group>"; };
 		974AF845EC9D52F0EEF274ED /* Pods-MVVMExample.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MVVMExample.release.xcconfig"; path = "Target Support Files/Pods-MVVMExample/Pods-MVVMExample.release.xcconfig"; sourceTree = "<group>"; };
 		CC805CD1475602098757AE52 /* libPods-MVVMExample.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-MVVMExample.a"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -82,18 +79,16 @@
 				8150F3F121E5D31E00222A63 /* AppDelegate.m */,
 				8150F3F321E5D31E00222A63 /* LoginViewController.h */,
 				8150F3F421E5D31E00222A63 /* LoginViewController.m */,
+				8150F40B21E5D81800222A63 /* LoginViewModel.h */,
+				8150F40C21E5D81800222A63 /* LoginViewModel.m */,
 				8150F3F921E5D32100222A63 /* Assets.xcassets */,
 				8150F3FB21E5D32100222A63 /* LaunchScreen.storyboard */,
 				8150F3FE21E5D32100222A63 /* Info.plist */,
 				8150F3FF21E5D32100222A63 /* main.m */,
 				8150F40821E5D69A00222A63 /* BizStyle.h */,
 				8150F40921E5D69A00222A63 /* BizStyle.m */,
-				8150F40B21E5D81800222A63 /* LoginViewModel.h */,
-				8150F40C21E5D81800222A63 /* LoginViewModel.m */,
 				8150F40E21E5DCE000222A63 /* BizPtContext.h */,
 				8150F40F21E5DCE000222A63 /* BizPtContext.m */,
-				8150F41121E5DD2E00222A63 /* YCUserInfo.h */,
-				8150F41221E5DD2E00222A63 /* YCUserInfo.m */,
 			);
 			path = MVVMExample;
 			sourceTree = "<group>";
@@ -235,7 +230,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				8150F3F521E5D31E00222A63 /* LoginViewController.m in Sources */,
-				8150F41321E5DD2E00222A63 /* YCUserInfo.m in Sources */,
 				8150F40021E5D32100222A63 /* main.m in Sources */,
 				8150F3F221E5D31E00222A63 /* AppDelegate.m in Sources */,
 				8150F40D21E5D81800222A63 /* LoginViewModel.m in Sources */,

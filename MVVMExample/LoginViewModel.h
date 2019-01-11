@@ -10,21 +10,15 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class YCUserInfo;
-
 @interface LoginViewModel : NSObject
 
 - (void)requestCaptchCode:(NSString*)telNum;
-- (void)requestVoiceCaptcha:(NSString*)captcha;
-
-- (void)onLogin:(NSString*)telNum andCaptcha:(NSString*)captcha;
+- (void)requestLoginWithCaptcha:(NSString*)telNum andCaptcha:(NSString*)captcha;
 
 - (void)onTelChanged:(NSString*)tel;
 - (void)onCaptchaChanged:(NSString*)captcha;
 
 @property (nonatomic,readonly)  BOOL  requestCaptchaSuc;
-
-@property (nonatomic,readonly)  YCUserInfo *myInfo;
 
 @property (nonatomic, readonly) NSNumber   *ntReqPhase;
 @property (nonatomic, readonly) NSString   *ntReqPrompt;

@@ -31,8 +31,6 @@
 @property (nonatomic, strong) NSNumber   *ntReqPhase;
 @property (nonatomic, strong) NSString   *ntReqPrompt;
 
-@property (nonatomic, strong) YCUserInfo *myInfo;
-
 @property (nonatomic, assign) BOOL  requestCaptchaSuc;
 
 @property (nonatomic, assign) BOOL validTel;
@@ -51,8 +49,6 @@
     self = [super init];
     
     if (self) {
-        NSAssert(![BizPtContext isLogin], @"suppose no User context");
-
         _requestCaptchaSuc = NO;
         
         _validTel     = NO;
@@ -70,18 +66,13 @@
         [captchaValidator addRegx:REGEX_CAPTCHA withMsg:@"请输入4位数验证码"];
         
         _currentTel = [BizPtContext retriveDefaultMobile];
-        if(_currentTel) {
+        if(!isEmptyString(_currentTel)) {
             _validTel = YES;
             _malFormatTelReason = @"";
         }
         
     }
     return self;
-}
-
-- (void)doesSupportThirdPartLogin:(BOOL)support
-{
-
 }
 
 - (void)requestCaptchCode:(NSString*)telNum
@@ -97,20 +88,15 @@
     
     [self ntRequesting];
 
-//stony todo
-//    [BizApi requestTextPasscodeWhileLogin:telNum
-//                                  success:^(NSDictionary *retDic)
-//     {
-//         [weakSelf ntRequestSuc:[retDic objectForKey:@"captcha"]];
-//         weakSelf.requestCaptchaSuc = YES;
-//
-//     } failure:^(NSError *err) {
-//         [weakSelf ntRequestFail:err];
-//
-//     }];
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1.2 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        [weakSelf ntRequestSuc:@"验证码已发送"];
+        weakSelf.requestCaptchaSuc = YES;
+    });
+
 }
 
-- (void)onLogin:(NSString*)telNum andCaptcha:(NSString*)captcha
+- (void)requestLoginWithCaptcha:(NSString*)telNum
+                     andCaptcha:(NSString*)captcha
 {
     if(!self.validTel){
         [self ntRequestFail:FastErr(_malFormatTelReason,0)];
@@ -126,41 +112,20 @@
     
     ISW_WEAKSELF
     
-//stony todo
-//    [BizApi loginViaMob:telNum andPasscode:captcha
-//                success:^(NSDictionary *retDic)
-//     {
-//         [weakSelf ntRequestSuc:@"手机登录"];
-//         [weakSelf loginSuccess:retDic];
-//         [BizPtContext setDefaultMobile:telNum];
-//
-//     } failure:^(NSError * err) {
-//         [weakSelf ntRequestFail:err];
-//
-//     }];
-}
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1.2 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        if([captcha isEqualToString:@"1234"])
+        {
+            [weakSelf ntRequestSuc:@"手机登录成功"];
+            [BizPtContext setDefaultMobile:telNum];
+        }
+        else
+        {
+            [weakSelf ntRequestFail:FastErr(@"验证码不正确", 0)];
+        }
 
-- (void)loginSuccess:(NSDictionary *)retDic
-{
-//stony todo
-//    NSDictionary *briefUserInfoDic = (NSDictionary *)[retDic objectForKey:@"briefUserInfo"];
-//    YCUserInfo  *myInfo  = [YCUserInfo parseBriefUserInfo:briefUserInfoDic];
-//
-//    [BizPtContext setMyInfo:myInfo];
-//    [BizPtContext setUid:[NSString stringWithFormat:@"%ld",myInfo.uid]];
-//    [BizPtContext setGsid:[retDic objectForKey:@"gsid"]];
-//
-//    // 极光推送
-//    [JPUSHService setAlias:[NSString stringWithFormat:@"%ld",myInfo.uid] completion:^(NSInteger iResCode, NSString *iAlias, NSInteger seq) {
-//
-//    } seq:1];
-//
-//    self.myInfo = myInfo;
-//
-//    [[NSNotificationCenter defaultCenter] postNotificationName:YCAccountLoginNotification object:self];
-    
-}
+    });
 
+}
 
 - (void)onTelChanged:(NSString*)tel
 {
@@ -192,19 +157,6 @@
         self.validCaptcha = YES;
     }
     
-}
-
-- (NSString *)thirdPartName
-{
-    if ([thirdPartType isEqualToString:@"wechatUid"]) {
-        return @"微信";
-    } else if ([thirdPartType isEqualToString:@"qqUid"]) {
-        return @"QQ";
-    } else if ([thirdPartType isEqualToString:@"weiboUid"]) {
-        return @"微博";
-    }
-    
-    return @"";
 }
 
 #pragma mark - utilities
